@@ -1,281 +1,301 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AiFillThunderbolt } from "react-icons/ai";
-import { FaChevronLeft, FaRegCalendarAlt, FaRegHeart, FaRegSmile, FaRegStar } from "react-icons/fa";
+import {
+  FaChevronLeft,
+  FaRegCalendarAlt,
+  FaRegHeart,
+  FaRegSmile,
+  FaRegStar,
+} from "react-icons/fa";
 import { FaGlassWater, FaRegCalendarDays } from "react-icons/fa6";
 import { FiMoon } from "react-icons/fi";
 import { GoGoal } from "react-icons/go";
 import { IoBookOutline, IoMusicalNotes, IoSunnySharp } from "react-icons/io5";
-import { MdDashboardCustomize, MdOutlineFitnessCenter, MdOutlineWorkOutline } from "react-icons/md";
-import { HabitService } from "../../services/habitService";
+import { MdOutlineFitnessCenter, MdOutlineWorkOutline } from "react-icons/md";
+import {HabitService} from "../../api/habitService";
+
 const options = [
-	{ id: "daily", label: "Daily", icon: <FaRegCalendarAlt /> },
-	{ id: "weekly", label: "Weekly", icon: <FaRegCalendarDays /> },
-	// { id: "custom", label: "Custom", icon: <MdDashboardCustomize /> },
+  { id: "daily", label: "Daily", icon: <FaRegCalendarAlt /> },
+  { id: "weekly", label: "Weekly", icon: <FaRegCalendarDays /> },
 ];
+
 const categories = [
-	{ id: "health", label: "Health", icon: <FaRegHeart /> },
-	{ id: "fitness", label: "Fitness", icon: <MdOutlineFitnessCenter /> },
-	{ id: "Mind", label: "Mind", icon: <FiMoon /> },
-	{ id: "learn", label: "Learn", icon: <IoBookOutline /> },
-	{ id: "work", label: "Work", icon: <MdOutlineWorkOutline /> },
-	{ id: "create", label: "Create", icon: <IoMusicalNotes /> },
-	{ id: "hydrate", label: "Hydrate", icon: <FaGlassWater /> },
-	{ id: "morning", label: "Morning", icon: <IoSunnySharp /> },
-	{ id: "focus", label: "Focus", icon: <AiFillThunderbolt /> },
-	{ id: "social", label: "Social", icon: <FaRegSmile /> },
-	{ id: "goals", label: "Goals", icon: <GoGoal /> },
-	{ id: "other", label: "Other", icon: <FaRegStar /> },
+  {
+    id: "health",
+    label: "Health",
+    icon: <FaRegHeart />,
+    gradient: "from-emerald-500 to-teal-600",
+  },
+  {
+    id: "fitness",
+    label: "Fitness",
+    icon: <MdOutlineFitnessCenter />,
+    gradient: "from-orange-500 to-red-600",
+  },
+  {
+    id: "mind",
+    label: "Mind",
+    icon: <FiMoon />,
+    gradient: "from-purple-500 to-indigo-600",
+  },
+  {
+    id: "learn",
+    label: "Learn",
+    icon: <IoBookOutline />,
+    gradient: "from-blue-500 to-cyan-600",
+  },
+  {
+    id: "work",
+    label: "Work",
+    icon: <MdOutlineWorkOutline />,
+    gradient: "from-pink-500 to-rose-600",
+  },
+  {
+    id: "create",
+    label: "Create",
+    icon: <IoMusicalNotes />,
+    gradient: "from-yellow-500 to-amber-600",
+  },
+  {
+    id: "hydrate",
+    label: "Hydrate",
+    icon: <FaGlassWater />,
+    gradient: "from-cyan-400 to-blue-600",
+  },
+  {
+    id: "morning",
+    label: "Morning",
+    icon: <IoSunnySharp />,
+    gradient: "from-yellow-400 to-orange-500",
+  },
+  {
+    id: "focus",
+    label: "Focus",
+    icon: <AiFillThunderbolt />,
+    gradient: "from-violet-500 to-purple-600",
+  },
+  {
+    id: "social",
+    label: "Social",
+    icon: <FaRegSmile />,
+    gradient: "from-pink-400 to-rose-500",
+  },
+  {
+    id: "goals",
+    label: "Goals",
+    icon: <GoGoal />,
+    gradient: "from-green-500 to-emerald-600",
+  },
+  {
+    id: "other",
+    label: "Other",
+    icon: <FaRegStar />,
+    gradient: "from-gray-500 to-slate-600",
+  },
 ];
+
 const HabitForm = () => {
-	const [active, setActive] = useState(options[0].id);
-	// State to hold the dynamic style for the sliding indicator
-	const [indicatorStyle, setIndicatorStyle] = useState({});
-	// Ref for the container to calculate relative positions
-	const containerRef = useRef(null);
+  const [active, setActive] = useState("daily");
+  const [indicatorStyle, setIndicatorStyle] = useState({});
+  const containerRef = useRef(null);
+  const [selectedCategory, setSelectedCategory] = useState("health");
 
-	const [selectedCategory, setSelectedCategory] = useState(categories[0].id);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    frequency: "daily",
+    category: "health",
+  });
 
-	const [formData, setFormData] = useState({
-		name: "",
-		description: "",
-		frequency: "daily",
-		category: "health",
-	});
+  const [validationErrors, setValidationErrors] = useState({ name: false });
+  const habitService = new HabitService();
 
-	const [validationErrors, setValidationErrors] = useState({
-		name: false,
-		description: false,
-	});
-	/**
-	 * Calculates the width and left position of the active button
-	 * relative to the container and updates the indicator style.
-	 */
-	const updateIndicator = () => {
-		if (!containerRef.current) return;
+  // Frequency slider indicator (smooth but not flashy)
+  const updateIndicator = () => {
+    if (!containerRef.current) return;
+    const activeBtn = containerRef.current.querySelector(
+      `[data-id="${active}"]`
+    );
+    if (!activeBtn) return;
 
-		// Find the currently active button element using its ID
-		// We use the attribute selector to find the button based on the active state ID
-		const activeButton = containerRef.current.querySelector(`[data-id="${active}"]`);
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
 
-		if (activeButton) {
-			const containerRect = containerRef.current.getBoundingClientRect();
-			const buttonRect = activeButton.getBoundingClientRect();
+    setIndicatorStyle({
+      width: `${btnRect.width}px`,
+      transform: `translateX(${btnRect.left - containerRect.left}px)`,
+    });
+  };
 
-			// Calculate the position relative to the container
-			const left = buttonRect.left - containerRect.left;
-			const width = buttonRect.width;
+  useEffect(() => {
+    updateIndicator();
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [active]);
 
-			setIndicatorStyle({
-				width: `${width}px`,
-				transform: `translateX(${left}px)`,
-			});
-		} else {
-			// Fallback for initial state if the element isn't immediately available
-			setIndicatorStyle({ width: "0px", transform: "translateX(0px)" });
-		}
-	};
+  const validateForm = () => {
+    const errors = { name: formData.name.trim() === "" };
+    setValidationErrors(errors);
+    return !errors.name;
+  };
 
-	// 1. Update indicator style when the active state changes
-	useEffect(() => {
-		// A small delay ensures the component has fully rendered and measured the buttons
-		const timeoutId = setTimeout(updateIndicator, 0);
-		return () => clearTimeout(timeoutId);
-	}, [active]);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      habitService.createHabit(formData);
+    }
+  };
 
-	// 2. Update indicator style on initial mount and window resize
-	useEffect(() => {
-		// Set initial position immediately on mount
-		updateIndicator();
+  const selectedGradient =
+    categories.find((c) => c.id === selectedCategory)?.gradient ||
+    "from-indigo-500 to-purple-600";
 
-		// Listen for window resize to keep the indicator position correct
-		window.addEventListener("resize", updateIndicator);
+  return (
+    <div className="min-h-screen bg-[#0a0a0b] text-white">
+      <div className="max-w-lg mx-auto px-4 pt-6 pb-12">
+        {/* Header */}
+        <div className="flex items-center justify-center py-6 mb-8 relative">
+          <button
+            onClick={() => window.history.back()}
+            className="absolute left-0 p-3 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 transition">
+            <FaChevronLeft className="text-lg text-gray-300" />
+          </button>
+          <h1 className="text-2xl font-bold">Create New Habit</h1>
+        </div>
 
-		return () => {
-			window.removeEventListener("resize", updateIndicator);
-		};
-	}, []); // Empty dependency array means this runs once on mount
-
-	const handleClick = (id) => {
-		setFormData((prev) => {
-			return { ...prev, frequency: id };
-		});
-		setActive(id);
-		// The useEffect above will handle the style update after state change
-	};
-
-	const validateForm = () => {
-		let isValid = true;
-		const newErrors = { name: false, description: false };
-
-		if (formData.name.trim() === "") {
-			newErrors.name = true;
-			isValid = false;
-		}
-
-		setValidationErrors(newErrors);
-		return isValid;
-	};
-
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		if (validateForm()) {
-			console.log("Form Data:", formData);
-			// Assuming HabitService is correctly imported and instantiated
-			habitService.createHabit(formData);
-			
-			// You might want to clear the form or show a success message here
-		} else {
-			console.log("Validation Failed: Please fill in all required fields.");
-		}
-	};
-	const habitService = new HabitService();
-	return (
-		<>
-			<div className="  min-h-screen  px-2 max-w-[400px] mx-auto bg-background text-white">
-				<div className="border-b-[1px] border-b-gray-500  relative text-center py-5">
-					<div
-						onClick={() => {
-							history.back();
-						}}
-						className="absolute left-3.5 flex justify-center items-center h-5 cursor-pointer"
-					>
-						<FaChevronLeft className=" text-gray-600 " />
-					</div>
-					<h1 className="font-bold ">New Habit</h1>
-				</div>
-				<form className=" mx-auto flex flex-col gap-2 justify-around my-3">
-					<div className=" flex flex-col gap-2 my-2">
-						<label htmlFor="name" className=" text-gray-300 pl-2 text-xs">
-							What do you want to track?
-						</label>
-						<input
-							type="text"
-							name="name"
-							id="name"
-							value={formData.name}
-							onChange={(e) =>
-								setFormData((prev) => {
-									return { ...prev, name: e.target.value };
-								})
-							}
-							className=" text-md bg-[#18181b] px-2.5 pt-4 pb-4.5 pl-3.5 rounded-xl placeholder:opacity-50 placeholder:text-[1rem] active:outline-none focus:outline-none  border-[3px]  border-[#0d0d0d] focus:border-[#615fff] transition-all duration-200"
-							placeholder="e.g. Read 30 mins"
-						/>
-						{validationErrors.name && (
-							<p className="text-red-400 text-xs pl-2 pt-1">Habit name cannot be empty.</p>
-						)}
-					</div>
-					<div className="flex flex-col gap-2 my-2">
-						<label htmlFor="description" className=" text-gray-300 pl-2 text-xs">
-							Description <span className="opacity-55">(optional)</span>
-						</label>
-						<textarea
-							type="text"
-							name="description"
-							id="description"
-							value={formData.description}
-							onChange={(e) =>
-								setFormData((prev) => {
-									return { ...prev, description: e.target.value };
-								})
-							}
-							className=" text-md bg-[#18181b] px-2.5 pt-3.5 pb-4 pl-3.5 rounded-xl placeholder:opacity-50 placeholder:text-[1rem] active:outline-none focus:outline-none  border-[3px]  border-[#0d0d0d] focus:border-blue-500 resize-none h-30 transition-all duration-200"
-							placeholder="Add details about your goal"
-						></textarea>
-					</div>
-					<div className="flex flex-col gap-2 my-2">
-						<label htmlFor="description" className=" text-gray-300 pl-2 text-sm">
-							How often?
-						</label>
-						<div
-							ref={containerRef}
-							className="relative flex py-2 bg-[#18181b] rounded-xl shadow-2xl"
-						>
-							{/* Sliding Indicator Background Box
-            - absolute position within the relative parent
-            - transition-all for the smooth gliding effect
-            - The style is dynamically set by the useEffect hook
-          */}
-							<div
-								className="absolute top-2 bottom-2  border-[2px] border-indigo-700/70 bg-[#27272a] rounded-lg shadow-lg transition-all duration-300 ease-in-out"
-								style={indicatorStyle}
-							></div>
-
-							{/* Map through options to create buttons */}
-							{options.map((option) => (
-								<div
-									key={option.id}
-									// Added data-id attribute for robust element selection in updateIndicator
-									data-id={option.id}
-									onClick={() => handleClick(option.id)}
-									// Ensure div takes equal space (flex-1)
-									className={`
-                flex-1 z-10 px-1 py-4 mx-1 rounded-lg text-sm font-medium 
-                flex items-center justify-center space-x-2 transition-colors 
-                
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8">
+          {/* Habit Name */}
+          <div className="space-y-3">
+            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider pl-1">
+              Habit Name
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
+              placeholder="e.g., Meditate 10 minutes"
+              className={`w-full px-5 py-4 rounded-2xl bg-white/5 backdrop-blur-xl border 
                 ${
-							active === option.id
-								? "text-white font-bold" // Active text color is white
-								: "text-gray-400 hover:text-gray-200" // Inactive text color
-						}
-              `}
-								>
-									{/* Icon using Unicode/Emoji */}
-									<span className="text-xl">{option.icon}</span>
-									{/* Label */}
-									<span>{option.label}</span>
-								</div>
-							))}
-						</div>
-					</div>
-					<div className="flex flex-col gap-2 my-2">
-						<label htmlFor="category" className=" text-gray-300 pl-2 text-sm">
-							Category
-						</label>
-						<div className="grid grid-cols-4 gap-4 px-2 text-center">
-							{categories.map((category) => (
-								<div
-									key={category.id}
-									onClick={() => {
-										setSelectedCategory(category.id);
-										setFormData((prev) => {
-											return { ...prev, category: category.id };
-										});
-									}}
-									className={`flex flex-col gap-1 `}
-								>
-									<div
-										className={` text-lg py-5 border-[1px] rounded-2xl flex justify-center items-center border-[#2a2929] transition-all duration-600 ease-in-out  bg-transparent ${
-											category.id === selectedCategory
-												? " bg-gradient-to-r from-pink-500 to-blue-700 font-bold text-2xl border-2 border-sky-400"
-												: ""
-										}  `}
-									>
-										{category.icon}
-									</div>
-									<label
-										className={` text-xs text-gray-400 ${
-											category.id === selectedCategory ? "text-white" : ""
-										}`}
-										htmlFor=""
-									>
-										{category.label}
-									</label>
-								</div>
-							))}
-						</div>
-					</div>
-					<button
-						className=" py-3 bg-[#18181b] m-2 mb-4 cursor-pointer hover:scale-105 transition rounded-xl"
-						type="submit"
-						onClick={handleSubmit}
-					>
-						Save Habbit
-					</button>
-				</form>
-			</div>
-		</>
-	);
+                  validationErrors.name
+                    ? "border-red-500/70"
+                    : "border-white/10"
+                }
+                focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 
+                placeholder:text-gray-500 transition-colors duration-200`}
+            />
+            {validationErrors.name && (
+              <p className="text-red-400 text-xs pl-1">
+                Please enter a habit name
+              </p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div className="space-y-3">
+            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider pl-1">
+              Description <span className="text-gray-600">(optional)</span>
+            </label>
+            <textarea
+              rows={4}
+              value={formData.description}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              placeholder="Why this habit matters..."
+              className="w-full px-5 py-4 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 
+                         focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 
+                         placeholder:text-gray-500 resize-none transition-colors duration-200"
+            />
+          </div>
+
+          {/* Frequency */}
+          <div className="space-y-4">
+            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider pl-1">
+              Frequency
+            </label>
+            <div
+              ref={containerRef}
+              className="relative flex bg-white/5 backdrop-blur-xl rounded-2xl p-2 border border-white/10">
+              <div
+                className="absolute inset-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl transition-all duration-300"
+                style={indicatorStyle}
+              />
+              {options.map((opt) => (
+                <button
+                  key={opt.id}
+                  data-id={opt.id}
+                  type="button"
+                  onClick={() => {
+                    setActive(opt.id);
+                    setFormData((prev) => ({ ...prev, frequency: opt.id }));
+                  }}
+                  className={`relative z-10 flex-1 flex items-center justify-center gap-2.5 py-4 rounded-xl font-medium text-sm transition-colors duration-200 ${
+                    active === opt.id
+                      ? "text-white"
+                      : "text-gray-400 hover:text-gray-200"
+                  }`}>
+                  <span className="text-xl">{opt.icon}</span>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Category Grid */}
+          <div className="space-y-4">
+            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider pl-1">
+              Category
+            </label>
+            <div className="grid grid-cols-4 gap-4">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    setFormData((prev) => ({ ...prev, category: cat.id }));
+                  }}
+                  className="space-y-2">
+                  <div
+                    className={`p-5 rounded-2xl border-2 transition-all duration-300 ${
+                      selectedCategory === cat.id
+                        ? `bg-gradient-to-br ${cat.gradient} border-transparent shadow-lg`
+                        : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
+                    }`}>
+                    <div className="text-2xl">{cat.icon}</div>
+                  </div>
+                  <p
+                    className={`text-xs font-medium text-center ${
+                      selectedCategory === cat.id
+                        ? "text-white"
+                        : "text-gray-500"
+                    }`}>
+                    {cat.label}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <button
+            type="submit"
+            className={`w-full py-5 mt-10 rounded-2xl font-bold text-lg tracking-wide
+              bg-gradient-to-r ${selectedGradient}
+              shadow-xl hover:shadow-2xl transition-all duration-200 active:scale-98`}>
+            Save Habit
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 export default HabitForm;
