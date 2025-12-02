@@ -1,9 +1,9 @@
 import Login from "../pages/auth/Login";
 import { Route, Routes } from "react-router-dom";
-import AllHabitsPage from "../pages/habits/AllHabitsPage";
 import Dashboard from "../pages/dashboard/Dashboard";
 import HabitForm from "../pages/forms/HabitForm";
 import ProtectedRoute from "./ProtectedRoute";
+import Home from "../pages/home/Home";
 
 const AppRouter = () => {
   return (
@@ -16,7 +16,7 @@ const AppRouter = () => {
         <Route
           element={
             <ProtectedRoute>
-              <AllHabitsPage />
+              <Home />
             </ProtectedRoute>
           }
           path="/"

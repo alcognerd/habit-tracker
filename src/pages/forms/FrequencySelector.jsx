@@ -1,3 +1,4 @@
+import React from "react";
 import { FaRegCalendarDays } from "react-icons/fa6";
 import { FaRegCalendarAlt } from "react-icons/fa";
 
@@ -17,9 +18,11 @@ const options = [
 const FrequencySelector = ({ active, setActive, formData, setFormData }) => {
   return (
     <div className="space-y-3">
-      <label className="text-sm text-gray-300 font-medium">How often?</label>
+      <label className="p-2 text-sm text-gray-300 font-medium">
+        How often?
+      </label>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 p-3">
         {options.map((opt) => {
           const isActive = active === opt.id;
 
@@ -29,10 +32,12 @@ const FrequencySelector = ({ active, setActive, formData, setFormData }) => {
               type="button"
               onClick={() => {
                 setActive(opt.id);
+
+                // FIX: reset days every time the frequency changes
                 setFormData((prev) => ({
                   ...prev,
                   frequency: opt.id,
-                  days: opt.id === "daily" ? [] : prev.days,
+                  days: [], // <-- important fix
                 }));
               }}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-2xl font-semibold transition-all duration-300

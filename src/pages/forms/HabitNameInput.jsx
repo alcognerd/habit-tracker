@@ -1,7 +1,9 @@
 const HabitNameInput = ({ formData, setFormData, validationErrors }) => {
   return (
-    <div className="space-y-3">
-      <label className="text-sm text-gray-300">What’s your habit?</label>
+    <div className="space-y-4">
+      <label className="text-sm text-gray-30 flex gap-2">
+        What’s your habit?
+      </label>
 
       <input
         type="text"
@@ -28,7 +30,7 @@ const HabitNameInput = ({ formData, setFormData, validationErrors }) => {
             description: e.target.value,
           }))
         }
-        className="w-full p-5 rounded-2xl bg-white/5 border border-white/10"
+        className="w-full p-5 rounded-2xl bg-white/5 border border-white/10 resize-none"
         placeholder="Why does it matter?"
       />
     </div>

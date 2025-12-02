@@ -6,7 +6,7 @@ export const loginWithGoogle = () => {
   window.location.href = `${backendurl}/oauth2/authorization/google`;
 };
 
-// 👉 Fetch logged-in user (Spring Boot session cookie)
+// 👉 Fetch logged-in user
 export const fetchUser = async () => {
   try {
     const response = await axios.get(`${backendurl}/api/auth/me`, {
@@ -14,6 +14,11 @@ export const fetchUser = async () => {
     });
     return response.data;
   } catch (error) {
-    return null; // if not logged in
+    return null;
   }
+};
+
+// 👉 Logout (API only)
+export const logout = async () => {
+  return axios.post(`${backendurl}/logout`, {}, { withCredentials: true });
 };

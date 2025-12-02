@@ -6,6 +6,7 @@ import HabitNameInput from "./HabitNameInput";
 import FrequencySelector from "./FrequencySelector";
 import WeeklyDaysSelector from "./WeeklyDaysSelector";
 import CategoryGrid from "./CategoryGrid";
+import Spinner from "../../components/common/Spinner";
 
 const dayMap = [
   "SUNDAY",
@@ -29,7 +30,7 @@ const HabitForm = () => {
     name: "",
     description: "",
     frequency: "daily",
-    days: [], // daily default → all days
+    days: [...dayMap],
     category: "Health",
   });
 
@@ -37,6 +38,8 @@ const HabitForm = () => {
     name: false,
     days: false,
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const errors = {
@@ -62,7 +65,8 @@ const HabitForm = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Auto-convert weekly → daily if all 7 days selected
+    setIsSubmitting(true);
+
     const isAllDaysSelected =
       formData.frequency === "weekly" && formData.days.length === 7;
 
@@ -82,30 +86,32 @@ const HabitForm = () => {
 
     try {
       await createHabit(payload);
-      console.log("Habit Created →", payload);
-      navigate("/"); // Redirect to home
+      navigate("/");
     } catch (error) {
       console.error("Failed to create habit", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0b] via-[#0f0f12] to-[#0a0a0b] text-white relative overflow-hidden">
-      <div className="max-w-lg mx-auto px-5 pt-8 pb-16 relative z-10">
+      <div className="max-w-lg mx-auto px-5 pt-6 pb-14 relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => window.history.back()}
-            className="p-3 rounded-2xl bg-white/5 border border-white/10">
-            <FaChevronLeft className="text-xl text-gray-300" />
+            className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+            <FaChevronLeft className="text-lg text-gray-300" />
           </button>
-          <h1 className="text-2xl font-bold text-white">Create New Habit</h1>
-          <div className="w-12" />
+
+          <h1 className="text-xl font-semibold text-white">Create Habit</h1>
+          <div className="w-10" />
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-8">
+          className="space-y-6">
           {/* Habit Name */}
           <HabitNameInput
             formData={formData}
@@ -136,7 +142,7 @@ const HabitForm = () => {
             />
           )}
 
-          {/* Category */}
+          {/* Category Section */}
           <CategoryGrid
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
@@ -146,8 +152,15 @@ const HabitForm = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-6 mt-12 rounded-3xl font-bold text-xl bg-gradient-to-r from-indigo-500 to-purple-600">
-            Create Habit
+            disabled={isSubmitting}
+            className={`w-full py-5 mt-10 rounded-2xl 
+              font-semibold text-lg flex items-center justify-center transition
+              ${
+                isSubmitting
+                  ? "opacity-60 cursor-not-allowed bg-indigo-500"
+                  : "bg-gradient-to-r from-indigo-500 to-purple-600"
+              }`}>
+            {isSubmitting ? <Spinner size={26} /> : "Create Habit"}
           </button>
         </form>
       </div>

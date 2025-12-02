@@ -1,17 +1,10 @@
-import React, { useState } from "react";
-import {
-  HiOutlineFire,
-  HiOutlineDotsVertical,
-  HiOutlineTrash,
-  HiOutlineX,
-} from "react-icons/hi";
-import { categoryIcons } from "../../utils/categoryIcons";
-import { categoryColors } from "../../utils/categoryIcons";
+import React from "react";
+import { categoryIcons, categoryColors } from "../../utils/categoryIcons";
+import axios from "axios";
+import backendUrl from "../../api/Constanceapi";
+import { HiOutlineTrash } from "react-icons/hi";
 
 export default function HabitCard({ habit, onDelete }) {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const getAccentClasses = (color) => {
     const map = {
       blue: "from-blue-500/20 to-blue-500/5 text-blue-400 border-blue-500/30 shadow-blue-600/20",
@@ -24,172 +17,57 @@ export default function HabitCard({ habit, onDelete }) {
     };
     return map[color] || map.blue;
   };
-  console.log(habit);
-  const Icon = categoryIcons[habit.category]; // get the actual icon component
+
+  const Icon = categoryIcons[habit.category];
   const accent = getAccentClasses(categoryColors[habit.category] || "blue");
 
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${backendUrl}/api/habits/${habit.id}`, {
+        withCredentials: true,
+      });
+      onDelete?.(habit.id); // notify parent
+    } catch (err) {
+      console.error("Error deleting habit:", err);
+    }
+  };
+
   return (
-    <>
-      {/* Habit Card */}
-      <div
-        className="
-          bg-[#111111]/80 
-          backdrop-blur-xl
-          rounded-3xl 
-          border border-gray-800/60 
-          shadow-[0px_0px_25px_-4px_rgba(0,0,0,0.6)]
-          hover:shadow-[0px_0px_35px_-4px_rgba(100,70,255,0.5)]
-          transition-all 
-          duration-300 
-          hover:-translate-y-1
-          p-5
-        ">
-        <div className="flex items-center justify-between">
-          {/* Left: Icon + Name */}
-          <div className="flex items-center gap-4">
-            <div
-              className={`
-                w-16 h-16 rounded-2xl 
-                bg-gradient-to-br ${accent}
-                border 
-                flex items-center justify-center
-                shadow-lg
-              `}>
-              <Icon className="w-7 h-7" />
-            </div>
+    <div
+      className={`
+        bg-[#111111]/80 
+        backdrop-blur-xl
+        rounded-3xl 
+        border border-gray-800/60 
+        shadow-[0px_0px_25px_-4px_rgba(0,0,0,0.6)]
+        transition-all duration-300 
+        p-5
+        flex items-center justify-between
+        hover:-translate-y-1
+      `}>
+      {/* Left: Icon + Name */}
+      <div className="flex items-center gap-4">
+        <div
+          className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${accent}
+            border flex items-center justify-center shadow-lg`}>
+          <Icon className="w-7 h-7" />
+        </div>
 
-            <div>
-              <h3 className="text-xl font-semibold text-gray-100">
-                {habit.name}
-              </h3>
-              <p className="text-sm text-gray-500">{habit.frequency}</p>
-            </div>
-          </div>
-
-          {/* More Options Button */}
-          <div className="relative">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-xl hover:bg-gray-900/70 transition-colors">
-              <HiOutlineDotsVertical className="w-5 h-5 text-gray-400" />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isMenuOpen && (
-              <div
-                className="
-                    absolute right-0 mt-2 w-48 
-                    bg-[#161616]/95 
-                    backdrop-blur-xl
-                    border border-gray-800 
-                    rounded-xl 
-                    shadow-xl 
-                    overflow-hidden 
-                    z-10
-                  ">
-                <button
-                  onClick={() => {
-                    setIsDeleteModalOpen(true);
-                    setIsMenuOpen(false);
-                  }}
-                  className="
-                      w-full px-4 py-3 text-left text-red-400 
-                      hover:bg-red-500/10 
-                      flex items-center gap-3 
-                      transition-colors
-                    ">
-                  <HiOutlineTrash className="w-5 h-5" />
-                  Delete Habit
-                </button>
-              </div>
-            )}
-          </div>
+        <div>
+          <h3 className="text-xl font-semibold text-gray-100">{habit.name}</h3>
+          <p className="text-sm text-gray-500">{habit.frequency}</p>
         </div>
       </div>
 
-      {/* Delete Modal */}
-      {isDeleteModalOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-            onClick={() => setIsDeleteModalOpen(false)}
-          />
-
-          {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              className="
-                bg-[#121212] 
-                border border-gray-800 
-                rounded-2xl 
-                shadow-2xl 
-                max-w-sm w-full 
-                p-6
-              "
-              onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-red-500/15 rounded-xl flex items-center justify-center">
-                    <HiOutlineTrash className="w-6 h-6 text-red-400" />
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-100">
-                    Delete Habit?
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-800">
-                  <HiOutlineX className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Are you sure you want to delete{" "}
-                <span className="text-gray-200 font-medium">
-                  “{habit.name}”
-                </span>
-                ? This action will permanently remove all progress.
-              </p>
-
-              <div className="flex gap-3 mt-8">
-                <button
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="
-                    flex-1 px-5 py-3 rounded-xl 
-                    border border-gray-700 
-                    text-gray-300 font-medium 
-                    hover:bg-gray-800/40 
-                    transition
-                  ">
-                  Cancel
-                </button>
-
-                <button
-                  onClick={() => {
-                    onDelete?.(habit.id);
-                    setIsDeleteModalOpen(false);
-                  }}
-                  className="
-                    flex-1 px-5 py-3 rounded-xl 
-                    bg-red-600 hover:bg-red-700 
-                    text-white font-medium 
-                    shadow-lg transition
-                  ">
-                  Delete Habit
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Click outside to close menu */}
-      {isMenuOpen && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => setIsMenuOpen(false)}
-        />
-      )}
-    </>
+      {/* Right: Regular Delete Button */}
+      <button
+        onClick={handleDelete}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-600 
+             hover:bg-red-700 text-white rounded-lg transition-colors 
+             cursor-pointer text-sm">
+        <HiOutlineTrash className="w-4 h-4" />
+        Delete
+      </button>
+    </div>
   );
 }

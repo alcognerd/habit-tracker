@@ -1,3 +1,4 @@
+import React from "react";
 import { FaRegHeart, FaRegSmile, FaRegStar } from "react-icons/fa";
 import { MdOutlineFitnessCenter, MdOutlineWorkOutline } from "react-icons/md";
 import { IoMusicalNotes, IoBookOutline, IoSunnySharp } from "react-icons/io5";
@@ -87,8 +88,10 @@ const CategoryGrid = ({
   setFormData,
 }) => {
   return (
-    <div className="space-y-5">
-      <label className="text-sm text-gray-300">Pick a vibe</label>
+    <div className="space-y-5 flex flex-col">
+      <label className="text-sm text-gray-300 font-medium px-2">
+        Pick a vibe
+      </label>
 
       <div className="grid grid-cols-4 gap-5">
         {categories.map((cat) => (
@@ -98,19 +101,30 @@ const CategoryGrid = ({
             onClick={() => {
               setSelectedCategory(cat.id);
               setFormData((prev) => ({ ...prev, category: cat.id }));
-            }}>
+            }}
+            className="flex flex-col items-center cursor-pointer group">
+            {/* Icon Wrapper */}
             <div
-              className={`p-6 rounded-3xl border-4 transition-all ${
+              className={`w-20 h-20 flex items-center justify-center 
+              rounded-3xl transition-all duration-200 border 
+              ${
                 selectedCategory === cat.id
-                  ? `bg-gradient-to-br ${cat.gradient} border-transparent`
-                  : "bg-white/5 border-white/10"
+                  ? `bg-gradient-to-br ${cat.gradient} text-white border-transparent scale-105 shadow-lg shadow-black/30`
+                  : "bg-white/5 border-white/10 text-gray-300 group-hover:bg-white/10"
               }`}>
-              <div className="text-center text-3xl">{cat.icon}</div>
+              <div className="text-3xl flex items-center justify-center">
+                {cat.icon}
+              </div>
             </div>
+
+            {/* Label */}
             <p
-              className={`mt-3 text-xs text-center ${
-                selectedCategory === cat.id ? "text-white" : "text-gray-400"
-              }`}>
+              className={`mt-3 text-xs text-center font-medium transition-all
+                ${
+                  selectedCategory === cat.id
+                    ? "text-white"
+                    : "text-gray-400 group-hover:text-gray-200"
+                }`}>
               {cat.label}
             </p>
           </button>
