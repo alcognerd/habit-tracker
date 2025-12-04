@@ -9,7 +9,6 @@ export default function HabitTodayCard({ habit, onStatusChange }) {
   const [status, setStatus] = useState(habit.habitStatus);
 
   useEffect(() => {
-    // Sync if parent habit changes
     setStatus(habit.habitStatus);
   }, [habit.habitStatus]);
 

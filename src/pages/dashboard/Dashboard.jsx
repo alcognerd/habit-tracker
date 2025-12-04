@@ -5,11 +5,13 @@ import HabitCard from "../../components/habits/HabitCard";
 import Spinner from "../../components/common/Spinner";
 import { motion } from "framer-motion";
 import HeatmapSelector from "../../components/heatmap/HeatmapSelector";
+import ConfirmModals from "../../components/common/ConfirmModals";
 
 export default function Dashboard() {
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [selectedHabit, setSelectedHabit] = useState(null); // habit to delete
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchHabits = async () => {
@@ -19,19 +21,38 @@ export default function Dashboard() {
         });
         setHabits(response.data.data || []);
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to load habits.");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchHabits();
   }, []);
 
-  const handleDelete = (habitId) => {
-    setHabits((prev) =>
-      prev.filter((habit) => habit.id !== habitId && habit._id !== habitId)
-    );
+  // When a card triggers delete
+  const openConfirmModal = (habit) => {
+    setSelectedHabit(habit);
+    setShowModal(true);
+  };
+
+  // Delete habit
+  const handleDelete = async () => {
+    if (!selectedHabit) return;
+    try {
+      await axios.delete(`${backendUrl}/api/habits/${selectedHabit.id}`, {
+        withCredentials: true,
+      });
+      setHabits((prev) =>
+        prev.filter(
+          (habit) =>
+            habit.id !== selectedHabit.id && habit._id !== selectedHabit.id
+        )
+      );
+      setSelectedHabit(null);
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (loading)
@@ -91,11 +112,20 @@ export default function Dashboard() {
             <HabitCard
               key={habit.id || habit._id}
               habit={habit}
-              onDelete={handleDelete}
+              onDelete={() => openConfirmModal(habit)} // trigger modal
             />
           ))}
         </motion.div>
       )}
+
+      {/* CENTRALIZED CONFIRMATION MODAL */}
+      <ConfirmModals
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={handleDelete}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete "${selectedHabit?.name}"?`}
+      />
     </div>
   );
 }

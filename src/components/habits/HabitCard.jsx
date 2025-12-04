@@ -1,7 +1,5 @@
 import React from "react";
 import { categoryIcons, categoryColors } from "../../utils/categoryIcons";
-import axios from "axios";
-import backendUrl from "../../api/Constanceapi";
 import { HiOutlineTrash } from "react-icons/hi";
 
 export default function HabitCard({ habit, onDelete }) {
@@ -20,17 +18,6 @@ export default function HabitCard({ habit, onDelete }) {
 
   const Icon = categoryIcons[habit.category];
   const accent = getAccentClasses(categoryColors[habit.category] || "blue");
-
-  const handleDelete = async () => {
-    try {
-      await axios.delete(`${backendUrl}/api/habits/${habit.id}`, {
-        withCredentials: true,
-      });
-      onDelete?.(habit.id); // notify parent
-    } catch (err) {
-      console.error("Error deleting habit:", err);
-    }
-  };
 
   return (
     <div
@@ -59,9 +46,9 @@ export default function HabitCard({ habit, onDelete }) {
         </div>
       </div>
 
-      {/* Right: Regular Delete Button */}
+      {/* Right: Delete Button triggers modal via onDelete */}
       <button
-        onClick={handleDelete}
+        onClick={() => onDelete?.(habit)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-600 
              hover:bg-red-700 text-white rounded-lg transition-colors 
              cursor-pointer text-sm">
