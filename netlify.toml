@@ -4,7 +4,7 @@ to = "/index.html"
 status = 200
 
 [[redirects]]
-  from = "/api/*"
-  to = "https://habit-tracker-backend-20wt.onrender.com/:splat"
-  status = 200
-  force = true
+from = "/api/*"
+to = "https://habit-tracker-backend-20wt.onrender.com/:splat"
+status = 200
+force = true
