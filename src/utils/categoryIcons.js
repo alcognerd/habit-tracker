@@ -6,6 +6,7 @@ import { MdOutlineWorkOutline } from "react-icons/md";
 import { AiFillThunderbolt } from "react-icons/ai";
 import { IoBookOutline } from "react-icons/io5";
 import { GoGoal } from "react-icons/go";
+import { IoIosFitness } from "react-icons/io";
 
 export const categoryIcons = {
   CREATE: IoMusicalNotes,
@@ -19,6 +20,7 @@ export const categoryIcons = {
   SOCIAL: FaRegSmile,
   WORK: MdOutlineWorkOutline,
   HEALTH: FaRegHeart,
+  FITNESS: IoIosFitness,
 };
 
 export const categoryColors = {
@@ -32,5 +34,6 @@ export const categoryColors = {
   OTHER: "gray", // FaRegStar
   SOCIAL: "pink", // FaRegSmile
   WORK: "teal", // MdOutlineWorkOutline
-  HEALTH: "orange", // FaRegHeart
+  HEALTH: "orange",
+  FITNESS: "green", // FaRegHeart
 };
